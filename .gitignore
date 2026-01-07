@@ -18,4 +18,5 @@ logs
 .yarn/install-state.gz
 .pnp.*
 .yarn-integrity
+.tests/
 documentation.md
