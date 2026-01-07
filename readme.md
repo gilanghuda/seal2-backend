@@ -278,7 +278,7 @@ Mendapatkan detail dari satu pengajuan cuti.
   - `401`: Tidak ada session aktif
 
 #### Hapus Pengajuan Cuti (Safe Delete)
-Menghapus pengajuan cuti dengan enkripsi data (hanya untuk pengajuan dengan status pending).
+Menghapus pengajuan cuti dengan enkripsi data (hanya untuk admin, pengajuan dengan status pending).
 
 - **URL**: `/api/v1/leave/requests/:id`
 - **Method**: `DELETE`
@@ -292,7 +292,7 @@ Menghapus pengajuan cuti dengan enkripsi data (hanya untuk pengajuan dengan stat
 - **Error**:
   - `404`: Pengajuan cuti tidak ditemukan
   - `400`: Hanya pengajuan cuti dengan status pending yang dapat dihapus
-  - `403`: Employee hanya dapat menghapus pengajuan cuti milik sendiri
+  - `403`: Hanya admin yang dapat menghapus pengajuan cuti
   - `401`: Tidak ada session aktif
 - **Catatan**: Data yang dihapus akan di-enkripsi dan disimpan di database dengan field `deleted_at` terisi. Data masih dapat dipulihkan oleh admin.
 
@@ -607,6 +607,6 @@ console.log(result)
 
 - **Session-based**: Semua endpoint menggunakan session yang disimpan di cookie `adonis-session`.
 - **Role-based Access Control (RBAC)**: 
-  - **Employee**: Dapat membuat, melihat, dan menghapus pengajuan cuti mereka sendiri (hanya pending), melihat quota mereka.
-  - **Admin**: Dapat melihat semua pengajuan cuti, approve/reject, dan manage pengajuan yang dihapus.
+  - **Employee**: Dapat membuat, melihat pengajuan cuti mereka sendiri, melihat quota mereka.
+  - **Admin**: Dapat melihat semua pengajuan cuti, approve/reject, menghapus (soft delete), dan restore pengajuan yang dihapus.
 - **Middleware**: Gunakan `.middleware('auth:web')` untuk melindungi route.

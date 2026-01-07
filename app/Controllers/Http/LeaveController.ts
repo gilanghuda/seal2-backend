@@ -176,6 +176,7 @@ export default class LeaveController {
   }
 
 
+
 public async delete({ params, auth, request, response }: HttpContextContract) {
   const responseService = new ResponseBuilder(response, request)
   const user = auth.use('web').user
@@ -184,18 +185,17 @@ public async delete({ params, auth, request, response }: HttpContextContract) {
     return responseService.unauthorized('Not authenticated')
   }
 
+  if (user.role !== 'admin') {
+    return responseService.forbidden('Hanya admin yang dapat menghapus pengajuan cuti')
+  }
+
   try {
     const leaveRequest = await this.leaveService.getLeaveRequestById(params.id)
 
     if (!leaveRequest) {
       return responseService.notFound('Pengajuan cuti tidak ditemukan')
     }
-
-
-    if (user.role === 'user' && leaveRequest.userId !== user.id) {
-      return responseService.forbidden('Anda tidak memiliki akses untuk menghapus pengajuan cuti ini')
-    }
-
+    
     const result = await this.leaveService.softDeleteLeaveRequest(params.id)
     return responseService.ok(result.message)
   } catch (error) {
