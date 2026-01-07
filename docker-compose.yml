@@ -5,6 +5,7 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: seal2_postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
@@ -27,21 +28,24 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: seal2_app
+    restart: unless-stopped
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      APP_KEY: ${APP_KEY:-}
+      APP_KEY: ${APP_KEY}
+      SESSION_DRIVER: ${SESSION_DRIVER:-cookie}
+      DRIVE_DISK: ${DRIVE_DISK:-local}
       DB_CONNECTION: ${DB_CONNECTION:-pg}
-      DB_HOST: ${DB_HOST:-postgres}
-      DB_PORT: ${DB_PORT:-5432}
+      DB_HOST: postgres
+      DB_PORT: 5432
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DB_DATABASE: ${DB_DATABASE:-seal2}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
-      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:-}
-      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
     ports:
       - "3333:3333"
     depends_on:
@@ -50,9 +54,12 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/build
     networks:
       - seal2_network
     command: npm run dev
+    stdin_open: true
+    tty: true
 
 networks:
   seal2_network:

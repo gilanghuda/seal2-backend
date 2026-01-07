@@ -6,8 +6,15 @@ dist
 .env.local
 .git
 .gitignore
-README.md
 .DS_Store
 .vscode
 .idea
 coverage
+tmp
+.nyc_output
+*.tgz
+README.md
+LICENSE
+docker-compose.yml
+.github
+tests
