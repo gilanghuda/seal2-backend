@@ -48,6 +48,5 @@ export default class LeaveRequest extends BaseModel {
   })
 
 
-  public static withTrashed = scope((query) => {
-  })
+
 }
