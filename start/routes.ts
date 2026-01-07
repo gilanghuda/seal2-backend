@@ -44,14 +44,17 @@ Route.group(() => {
 
 
   Route.group(() => {
-    Route.post('/requests', 'LeaveController.create') 
-    Route.get('/requests', 'LeaveController.index') 
-    Route.get('/requests/:id', 'LeaveController.show') 
-    Route.get('/quota', 'LeaveController.getMyQuota') 
+      Route.post('/requests', 'LeaveController.create') 
+      Route.get('/requests', 'LeaveController.index') 
+      Route.get('/requests/:id', 'LeaveController.show') 
+      Route.delete('/requests/:id', 'LeaveController.delete')
+      Route.get('/quota', 'LeaveController.getMyQuota') 
 
-    Route.get('/admin/requests', 'LeaveController.getAllRequests') 
-    Route.patch('/admin/requests/:id/status', 'LeaveController.updateStatus') 
-  }).middleware('auth:web')
-  .prefix('/leave')
+      Route.get('/admin/requests', 'LeaveController.getAllRequests') 
+      Route.get('/admin/requests/deleted', 'LeaveController.getDeletedRequests')
+      Route.patch('/admin/requests/:id/status', 'LeaveController.updateStatus')
+      Route.post('/admin/requests/:id/restore', 'LeaveController.restore')
+    }).middleware('auth:web')
+    .prefix('/leave')
 
 }).prefix('/api/v1')

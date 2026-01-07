@@ -21,7 +21,10 @@ export default class LeaveRepository {
 
 
   public async getUserLeaveRequests(userId: string): Promise<LeaveRequest[]> {
-    return await LeaveRequest.query().where('user_id', userId).orderBy('created_at', 'desc')
+    return await LeaveRequest.query()
+      .where('user_id', userId)
+      .apply(scopes => scopes.onlyActive())
+      .orderBy('created_at', 'desc')
   }
 
 
@@ -29,9 +32,10 @@ export default class LeaveRepository {
     page: number = 1,
     limit: number = 10
   ): Promise<{ data: LeaveRequest[]; pagination: { total: number; pages: number } }> {
-    const query = LeaveRequest.query()
+    const query = LeaveRequest.query().apply(scopes => scopes.onlyActive())
     const total = await query.count('* as count').then((result) => result[0].$extras.count)
     const data = await LeaveRequest.query()
+      .apply(scopes => scopes.onlyActive())
       .orderBy('created_at', 'desc')
       .paginate(page, limit)
     
@@ -46,7 +50,10 @@ export default class LeaveRepository {
 
 
   public async getLeaveRequestById(id: string): Promise<LeaveRequest | null> {
-    return await LeaveRequest.find(id)
+    return await LeaveRequest.query()
+      .where('id', id)
+      .apply(scopes => scopes.onlyActive())
+      .first()
   }
 
 
@@ -127,5 +134,87 @@ export default class LeaveRepository {
       .first()
 
     return !!overlapping
+  }
+
+
+
+  public async softDeleteLeaveRequest(
+    id: string,
+    encryptionService: any
+  ): Promise<LeaveRequest | null> {
+    const leaveRequest = await LeaveRequest.find(id)
+    
+    if (!leaveRequest) {
+      return null
+    }
+
+
+    const encodedData = encryptionService.encode({
+      id: leaveRequest.id,
+      userId: leaveRequest.userId,
+      startDate: leaveRequest.startDate,
+      endDate: leaveRequest.endDate,
+      reason: leaveRequest.reason,
+      attachment: leaveRequest.attachment,
+      status: leaveRequest.status,
+      createdAt: leaveRequest.createdAt?.toISO(),
+      updatedAt: leaveRequest.updatedAt?.toISO(),
+    })
+
+    leaveRequest.deletedAt = DateTime.now()
+    leaveRequest.reason = `[DELETED]${encodedData}`
+    await leaveRequest.save()
+
+    return leaveRequest
+  }
+
+
+  public async restoreLeaveRequest(
+    id: string,
+    encryptionService: any
+  ): Promise<LeaveRequest | null> {
+    const leaveRequest = await LeaveRequest.query()
+      .where('id', id)
+      .apply(scopes => scopes.onlyTrashed())
+      .first()
+
+    if (!leaveRequest) {
+      return null
+    }
+
+
+    const encodedPart = leaveRequest.reason.replace('[DELETED]', '')
+    const decodedData = encryptionService.decode(encodedPart)
+
+    leaveRequest.startDate = new Date(decodedData.startDate)
+    leaveRequest.endDate = new Date(decodedData.endDate)
+    leaveRequest.reason = decodedData.reason
+    leaveRequest.attachment = decodedData.attachment
+    leaveRequest.status = decodedData.status
+    leaveRequest.deletedAt = null
+    await leaveRequest.save()
+
+    return leaveRequest
+  }
+
+
+  public async getDeletedLeaveRequests(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ data: LeaveRequest[]; pagination: { total: number; pages: number } }> {
+    const query = LeaveRequest.query().apply(scopes => scopes.onlyTrashed())
+    const total = await query.count('* as count').then((result) => result[0].$extras.count)
+    const data = await LeaveRequest.query()
+      .apply(scopes => scopes.onlyTrashed())
+      .orderBy('deleted_at', 'desc')
+      .paginate(page, limit)
+
+    return {
+      data: data.all(),
+      pagination: {
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    }
   }
 }

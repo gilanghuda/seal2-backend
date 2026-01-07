@@ -7,7 +7,6 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
 
-      // FK to users table (uuid)
       table.uuid('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE')
       table.string('provider').notNullable()
       table.string('provider_id').notNullable()

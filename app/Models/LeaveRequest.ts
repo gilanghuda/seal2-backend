@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, column, belongsTo, BelongsTo, scope } from '@ioc:Adonis/Lucid/Orm'
 import User from 'App/Models/User'
 
 export default class LeaveRequest extends BaseModel {
@@ -32,6 +32,22 @@ export default class LeaveRequest extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
 
+  @column.dateTime({ columnName: 'deleted_at' })
+  public deletedAt: DateTime | null
+
   @belongsTo(() => User)
   public user: BelongsTo<typeof User>
+
+  public static onlyActive = scope((query) => {
+    query.whereNull('deleted_at')
+  })
+
+
+  public static onlyTrashed = scope((query) => {
+    query.whereNotNull('deleted_at')
+  })
+
+
+  public static withTrashed = scope((query) => {
+  })
 }

@@ -1,4 +1,5 @@
 import LeaveRepository from 'App/Repositories/LeaveRepository'
+import EncryptionService from 'App/Utils/EncryptionService'
 import FileSystemHelper from 'App/Utils/FileSystem'
 import type { CreateLeaveRequestDTO, LeaveRequestDTO, LeaveQuotaDTO } from 'App/DTO/LeaveDTO'
 import { DateTime } from 'luxon'
@@ -6,9 +7,11 @@ import { DateTime } from 'luxon'
 
 export default class LeaveService {
   private leaveRepository: LeaveRepository
+  private encryptionService: EncryptionService
 
   constructor() {
     this.leaveRepository = new LeaveRepository()
+    this.encryptionService = new EncryptionService()
   }
 
 
@@ -101,6 +104,61 @@ export default class LeaveService {
       quotaTotal: quota.quotaTotal,
       quotaUsed: quota.quotaUsed,
       quotaRemaining: quota.quotaTotal - quota.quotaUsed,
+    }
+  }
+
+  /**
+   * Safe Delete (Soft Delete) dengan Encoding
+   */
+  public async softDeleteLeaveRequest(id: string): Promise<{ message: string }> {
+    const leaveRequest = await this.leaveRepository.softDeleteLeaveRequest(
+      id,
+      this.encryptionService
+    )
+
+    if (!leaveRequest) {
+      const err = new Error('Pengajuan cuti tidak ditemukan')
+      ;(err as any).code = 'E_NOT_FOUND'
+      throw err
+    }
+
+    return {
+      message: 'Pengajuan cuti berhasil dihapus (data terenkripsi)',
+    }
+  }
+
+  /**
+   * Restore (Decode) data yang sudah di-delete
+   */
+  public async restoreLeaveRequest(id: string): Promise<LeaveRequestDTO | null> {
+    const leaveRequest = await this.leaveRepository.restoreLeaveRequest(
+      id,
+      this.encryptionService
+    )
+
+    if (!leaveRequest) {
+      const err = new Error('Pengajuan cuti yang dihapus tidak ditemukan')
+      ;(err as any).code = 'E_NOT_FOUND'
+      throw err
+    }
+
+    return this.serializeLeaveRequest(leaveRequest)
+  }
+
+  /**
+   * Dapatkan daftar leave request yang sudah dihapus (Admin only)
+   */
+  public async getDeletedLeaveRequests(page: number = 1, limit: number = 10) {
+    const result = await this.leaveRepository.getDeletedLeaveRequests(page, limit)
+    return {
+      data: result.data.map((req) => ({
+        id: req.id,
+        userId: req.userId,
+        status: req.status,
+        deletedAt: req.deletedAt?.toISO() || '',
+        note: 'Data terenkripsi. Gunakan restore endpoint untuk mengembalikan data.',
+      })),
+      pagination: result.pagination,
     }
   }
 

@@ -38,7 +38,6 @@ export default class UserRepository {
         providerData: payload.raw || null,
         avatarUrl: payload.avatarUrl || null,
       })
-      // update user's avatar if not set
       if (!user.avatarUrl && payload.avatarUrl) {
         user.avatarUrl = payload.avatarUrl
         await user.save()

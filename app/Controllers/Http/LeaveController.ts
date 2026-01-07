@@ -174,4 +174,88 @@ export default class LeaveController {
       )
     }
   }
+
+
+public async delete({ params, auth, request, response }: HttpContextContract) {
+  const responseService = new ResponseBuilder(response, request)
+  const user = auth.use('web').user
+
+  if (!user) {
+    return responseService.unauthorized('Not authenticated')
+  }
+
+  try {
+    const leaveRequest = await this.leaveService.getLeaveRequestById(params.id)
+
+    if (!leaveRequest) {
+      return responseService.notFound('Pengajuan cuti tidak ditemukan')
+    }
+
+
+    if (user.role === 'user' && leaveRequest.userId !== user.id) {
+      return responseService.forbidden('Anda tidak memiliki akses untuk menghapus pengajuan cuti ini')
+    }
+
+    const result = await this.leaveService.softDeleteLeaveRequest(params.id)
+    return responseService.ok(result.message)
+  } catch (error) {
+    const err = error as any
+    return responseService.internalServerError(err?.message || 'Gagal menghapus pengajuan cuti')
+  }
+}
+
+
+public async restore({ params, auth, request, response }: HttpContextContract) {
+  const responseService = new ResponseBuilder(response, request)
+  const user = auth.use('web').user
+
+  if (!user) {
+    return responseService.unauthorized('Not authenticated')
+  }
+
+  if (user.role !== 'admin') {
+    return responseService.forbidden('Hanya admin yang dapat restore pengajuan cuti')
+  }
+
+  try {
+    const leaveRequest = await this.leaveService.restoreLeaveRequest(params.id)
+
+    if (!leaveRequest) {
+      return responseService.notFound('Pengajuan cuti yang dihapus tidak ditemukan')
+    }
+
+    return responseService.ok('Pengajuan cuti berhasil dikembalikan (data didekripsi)', leaveRequest)
+  } catch (error) {
+    const err = error as any
+    if (error.code === 'E_DECRYPTION_FAILED') {
+      return responseService.badRequest('Data terenkripsi tidak valid, tidak dapat dikembalikan', error.messages)
+    }
+    return responseService.internalServerError(err?.message || 'Gagal mengembalikan pengajuan cuti')
+  }
+}
+
+
+public async getDeletedRequests({ auth, request, response }: HttpContextContract) {
+  const responseService = new ResponseBuilder(response, request)
+  const user = auth.use('web').user
+
+  if (!user) {
+    return responseService.unauthorized('Not authenticated')
+  }
+
+  if (user.role !== 'admin') {
+    return responseService.forbidden('Hanya admin yang dapat melihat pengajuan cuti yang dihapus')
+  }
+
+  try {
+    const page = request.input('page', 1)
+    const limit = request.input('limit', 10)
+
+    const result = await this.leaveService.getDeletedLeaveRequests(page, limit)
+    return responseService.ok('Daftar pengajuan cuti yang dihapus berhasil diambil', result)
+  } catch (error) {
+    const err = error as any
+    return responseService.internalServerError(err?.message || 'Gagal mengambil daftar pengajuan cuti yang dihapus')
+  }
+}
 }
