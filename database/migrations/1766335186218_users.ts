@@ -8,7 +8,9 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid('id').primary().defaultTo(this.db.rawQuery('uuid_generate_v4()').knexQuery)
       table.string('email', 255).notNullable().unique()
-      table.string('password', 180).notNullable()
+      table.string('username', 255).notNullable().unique()
+      table.string('password', 180).nullable()
+      table.string('avatar_url').nullable()
       table.string('remember_me_token').nullable()
 
       /**
@@ -16,6 +18,7 @@ export default class extends BaseSchema {
        */
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).notNullable()
+
     })
   }
 

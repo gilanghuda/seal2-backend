@@ -23,3 +23,22 @@ import Route from '@ioc:Adonis/Core/Route'
 Route.get('/', async () => {
   return { hello: 'world' }
 })
+
+Route.group(() => {
+  Route.post('/register', 'AuthController.register')
+  Route.post('/login', 'AuthController.login')
+  Route.post('/logout', 'AuthController.logout').middleware('auth:web')
+  Route.get('/me', 'AuthController.me').middleware('auth:web')
+
+  
+  Route.get('/auth/google', 'AuthController.redirectToGoogle')
+  Route.get('/auth/google/callback', 'AuthController.handleGoogleCallback')
+
+
+  Route.get('/auth/github', 'AuthController.redirectToGithub')
+  Route.get('/auth/github/callback', 'AuthController.handleGithubCallback')
+
+
+  Route.get('/auth/discord', 'AuthController.redirectToDiscord')
+  Route.get('/auth/discord/callback', 'AuthController.handleDiscordCallback')
+}).prefix('/api/v1')
