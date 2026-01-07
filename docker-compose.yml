@@ -22,11 +22,12 @@ services:
       timeout: 5s
       retries: 5
 
-  # AdonisJS Application
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    image: gilanghuda/seal2-be:latest
     container_name: seal2_app
     restart: unless-stopped
     environment:
