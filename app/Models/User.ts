@@ -2,6 +2,8 @@ import { DateTime } from 'luxon'
 import Hash from '@ioc:Adonis/Core/Hash'
 import { column, beforeSave, BaseModel, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
 import UserProvider from 'App/Models/UserProvider'
+import LeaveRequest from 'App/Models/LeaveRequest'
+import LeaveQuota from 'App/Models/LeaveQuota'
 
 export default class User extends BaseModel {
   public static selfAssignPrimaryKey = true
@@ -21,8 +23,17 @@ export default class User extends BaseModel {
   @column()
   public avatarUrl: string | null
 
+  @column()
+  public role: 'user' | 'admin'
+
   @hasMany(() => UserProvider)
   public providers: HasMany<typeof UserProvider>
+
+  @hasMany(() => LeaveRequest)
+  public leaveRequests: HasMany<typeof LeaveRequest>
+
+  @hasMany(() => LeaveQuota)
+  public leaveQuotas: HasMany<typeof LeaveQuota>
 
   @column()
   public rememberMeToken: string | null
