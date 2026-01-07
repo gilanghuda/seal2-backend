@@ -41,4 +41,17 @@ Route.group(() => {
 
   Route.get('/auth/discord', 'AuthController.redirectToDiscord')
   Route.get('/auth/discord/callback', 'AuthController.handleDiscordCallback')
+
+
+  Route.group(() => {
+    Route.post('/requests', 'LeaveController.create') 
+    Route.get('/requests', 'LeaveController.index') 
+    Route.get('/requests/:id', 'LeaveController.show') 
+    Route.get('/quota', 'LeaveController.getMyQuota') 
+
+    Route.get('/admin/requests', 'LeaveController.getAllRequests') 
+    Route.patch('/admin/requests/:id/status', 'LeaveController.updateStatus') 
+  }).middleware('auth:web')
+  .prefix('/leave')
+
 }).prefix('/api/v1')
