@@ -27,7 +27,7 @@ const allyConfig: AllyConfig = {
 		driver: 'github',
 		clientId: Env.get('GITHUB_CLIENT_ID'),
 		clientSecret: Env.get('GITHUB_CLIENT_SECRET'),
-		callbackUrl: 'http://localhost:3333/api/v1/auth/github/callback',
+		callbackUrl: 'https://seal.gilanghuda.my.id/api/v1/auth/github/callback',
 	},
 	/*
 	|--------------------------------------------------------------------------
@@ -38,7 +38,7 @@ const allyConfig: AllyConfig = {
 		driver: 'google',
 		clientId: Env.get('GOOGLE_CLIENT_ID'),
 		clientSecret: Env.get('GOOGLE_CLIENT_SECRET'),
-		callbackUrl: 'http://localhost:3333/api/v1/auth/google/callback',
+		callbackUrl: 'https://seal.gilanghuda.my.id/api/v1/auth/google/callback',
 	},
 }
 
