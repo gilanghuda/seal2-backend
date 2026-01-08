@@ -8,7 +8,7 @@ export default class UserProvider extends BaseModel {
   @column({ isPrimary: true })
   public id: number
 
-  @column({ columnName: 'user_id' })
+  @column()
   public userId: string
 
   @column()
@@ -30,7 +30,7 @@ export default class UserProvider extends BaseModel {
   public updatedAt: DateTime
 
   @belongsTo(() => User, {
-    foreignKey: 'user_id',
+    foreignKey: 'userId',
   })
   public user: BelongsTo<typeof User>
 }

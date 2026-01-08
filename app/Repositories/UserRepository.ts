@@ -18,34 +18,32 @@ export default class UserRepository {
       .preload('user')
       .first()
 
-    if (providerRecord) {
-      const user = providerRecord.user
-      if (user) {
-        providerRecord.avatarUrl = payload.avatarUrl || providerRecord.avatarUrl
-        providerRecord.providerData = payload.raw || providerRecord.providerData
-        await providerRecord.save()
-        return user
-      }
+    if (providerRecord && providerRecord.user) {
+      providerRecord.avatarUrl = payload.avatarUrl || providerRecord.avatarUrl
+      providerRecord.providerData = payload.raw || providerRecord.providerData
+      await providerRecord.save()
+      return providerRecord.user
     }
 
-
     let user = await User.findBy('email', payload.email)
+    
     if (user) {
       await UserProvider.create({
-        userId: user.id, 
+        userId: user.id,  
         provider: payload.provider,
         providerId: payload.providerId,
         providerData: payload.raw || null,
         avatarUrl: payload.avatarUrl || null,
       })
+      
       if (!user.avatarUrl && payload.avatarUrl) {
         user.avatarUrl = payload.avatarUrl
         await user.save()
       }
+      
       return user
     }
 
-  
     user = await User.create({
       username: payload.username || payload.email.split('@')[0],
       email: payload.email,
@@ -55,7 +53,7 @@ export default class UserRepository {
 
 
     await UserProvider.create({
-      userId: user.id,
+      userId: user.id,  
       provider: payload.provider,
       providerId: payload.providerId,
       providerData: payload.raw || null,
