@@ -52,13 +52,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/build
     networks:
       - seal2_network
-    command: npm run dev
     stdin_open: true
     tty: true
 
