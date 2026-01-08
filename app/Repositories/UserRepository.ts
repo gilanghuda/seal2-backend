@@ -15,10 +15,11 @@ export default class UserRepository {
     const providerRecord = await UserProvider.query()
       .where('provider', payload.provider)
       .where('provider_id', payload.providerId)
+      .preload('user')
       .first()
 
     if (providerRecord) {
-      const user = await providerRecord.related('user').query().first()
+      const user = providerRecord.user
       if (user) {
         providerRecord.avatarUrl = payload.avatarUrl || providerRecord.avatarUrl
         providerRecord.providerData = payload.raw || providerRecord.providerData
@@ -30,9 +31,8 @@ export default class UserRepository {
 
     let user = await User.findBy('email', payload.email)
     if (user) {
-    
       await UserProvider.create({
-        userId: user.id,
+        userId: user.id, 
         provider: payload.provider,
         providerId: payload.providerId,
         providerData: payload.raw || null,
@@ -45,12 +45,14 @@ export default class UserRepository {
       return user
     }
 
+  
     user = await User.create({
       username: payload.username || payload.email.split('@')[0],
       email: payload.email,
       password: null,
       avatarUrl: payload.avatarUrl || null,
     })
+
 
     await UserProvider.create({
       userId: user.id,
@@ -75,11 +77,11 @@ export default class UserRepository {
     const providerRecord = await UserProvider.query()
       .where('provider', provider)
       .where('provider_id', providerId)
+      .preload('user')
       .first()
 
     if (!providerRecord) return null
-    const user = await providerRecord.related('user').query().first()
-    return user || null
+    return providerRecord.user || null
   }
 
   public async emailExists(email: string): Promise<boolean> {

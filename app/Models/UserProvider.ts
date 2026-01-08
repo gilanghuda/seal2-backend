@@ -29,6 +29,8 @@ export default class UserProvider extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
 
-  @belongsTo(() => User)
+  @belongsTo(() => User, {
+    foreignKey: 'user_id',
+  })
   public user: BelongsTo<typeof User>
 }
